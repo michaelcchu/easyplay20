@@ -118,7 +118,7 @@ fetch("https://michaelcchu.github.io/easyplay20/dir.txt")
 
 function loadMusic() {
   const option = library.options[library.selectedIndex];
-  fetch("https://michaelcchu.github.io/easyplay19/midi/" + option.text)
+  fetch("https://michaelcchu.github.io/easyplay20/midi/" + option.text)
   .then( response => response.arrayBuffer())
   .then( data => {setup(data);})
   .catch( e => {console.log( e );} );

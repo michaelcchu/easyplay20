@@ -1,5 +1,5 @@
-.top {grid-area: top;}
-.middle {grid-area: middle;}
+.top {grid-area: top; min-width:0px;}
+.middle {grid-area: middle; min-width:0px;}
 .bottom {grid-area: bottom;}
 .footer {
     grid-area: footer; 
