@@ -9,46 +9,13 @@ const reader = new FileReader();
 let activePress; let chords = []; let index; let midi; let notes; 
 let on = false; let press; let ticks = []; let tuning;
 
-let notesPlaying = [];
-
 function byId(id) {return document.getElementById(id);};
 
-// stops all notes that finished before or at the index i chord
-function stopNotes(i) {
-  let time;
-  if (i < chords.length) {
-    const chord = chords[i];
-    time = chord[0].ticks;
-  } else {
-    time = Infinity;
-  }
-  const updatedNotesPlaying = [];  
-  for (let note of notesPlaying) {
-    if (note.ticks + note.durationTicks <= time) {
-        let stop = true;
-        for (let otherNote of notesPlaying) {
-          if ((note.midi === otherNote.midi) &&
-          (otherNote.ticks + otherNote.durationTicks > time)) {
-            stop = false;
-          }
-        }
-        if (stop) {
-          gainNodes[note.midi].gain.setTargetAtTime(0,
-            audioContext.currentTime, 0.015);      
-        }
-    } else {
-      updatedNotesPlaying.push(note);
-    }
-  }
-  notesPlaying = updatedNotesPlaying;
-}
-
-function startChord(i) {
+function setChord(i, gain) {
   const chord = chords[i];
   for (let note of chord) {
-    gainNodes[note.midi].gain.setTargetAtTime(normalGain,
+    gainNodes[note.midi].gain.setTargetAtTime(gain,
       audioContext.currentTime, 0.015);
-    notesPlaying.push(note);
   }  
 }
 
@@ -76,16 +43,18 @@ function key(e) {
         "Play","Tab"];
     if (on && !badKeys.some(badKey => strPress.includes(badKey)) && !e.repeat
       && (index < chords.length) && (press !== activePress)) {
-        stopNotes(index); // turn the old oscillators off
-        startChord(index, normalGain); // turn the new oscillators on
+        if (index > 0) {
+          setChord(index-1, 0); // turn the old oscillators off
+        }
+        setChord(index, normalGain); // turn the new oscillators on
         activePress = press; index++;
     }
   }
 
   function up() {
     if (on && (press === activePress)) {
-      stopNotes(index); // turn the old oscillators off
-      activePress = null;
+        setChord(index-1, 0); // turn the old oscillators off
+        activePress = null;
     }
   }
 
@@ -96,7 +65,6 @@ function key(e) {
 
 function resetVars() {
     activePress = null; index = 0; 
-    notesPlaying = [];
     for (let gainNode of gainNodes) {gainNode.gain.value = 0;}
 }
 
@@ -132,7 +100,7 @@ let optgroup = document.createElement("optgroup");
 optgroup.label = "tobis-notenarchiv-midi";
 
 // Retrieve text file
-fetch("https://michaelcchu.github.io/easyplay19/dir.txt")
+fetch("https://michaelcchu.github.io/easyplay20/dir.txt")
 .then( response => response.text())
 .then( data => {
   const lines = data.split("\n");
